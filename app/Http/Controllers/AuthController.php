@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -72,6 +73,38 @@ class AuthController extends Controller
         return response()->json([
             'message' => __($status),
         ]);
+
+    }
+
+    public function resetPassword(Request $request): JsonResponse {
+        $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed']
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user, string $password): void {
+                $user->forceFill([
+                    'password' => $password,
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                $user->tokens()->delete();
+            }
+        );
+
+        if($status !== Password::PASSWORD_RESET){
+            throw ValidationException::withMessages([
+                'email' => [__($status)],
+            ]);
+        }
+
+        return response()->json([
+            'message' => __($status),
+        ]);
+
 
     }
 }
