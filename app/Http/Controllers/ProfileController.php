@@ -15,16 +15,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         return response()->json([
-            'user'=> [
-                'id'=> $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'bio' => $user->bio,
-                'profile_photo' => $user->profile_photo,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-            ]
+            'user'=> $this->profileData($user)
         ]);
     }
 
@@ -49,24 +40,26 @@ class ProfileController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
             'bio' => ['sometimes', 'string', 'nullable', 'max:1000'],
-            'profile_photo' => ['sometimes', 'nullable', 'url', 'max:2048']
+            'profile_photo' => ['sometimes', 'nullable', 'url', 'max:5120'],
+            'cover_photo' => ['sometimes', 'nullable', 'url', 'max:5120']
         ]);
+
+        if ($request->hasFile('profile_photo')){
+            $this->deleteStoredFile($user->profile_photo);
+            $validated['profile_photo'] = $request->file('profile_photo')->store('profile-photos', 'public');
+        }
+
+        if ($request->hasFile('cover_photo')){
+            $this->deleteStoredFile($user->cover_photo);
+            $validated['cover_photo'] = $request->file('cover_photo')->store('cover-photos', 'public');
+        }
 
 
         $user->update($validated);
 
         return response()->json([
             'message' => 'Profile updated successfully,',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'bio' => $user->bio,
-                'profile_photo' => $user->profile_photo,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-            ]
+            'user' => $this->profileData($user->fresh())
         ]);
     }
 
