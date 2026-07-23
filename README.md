@@ -61,3 +61,6 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## without storage:link the uploaded files wont be publicly accessible
 php artisan storage:link
+
+
+<!-- Action-oriented: "I may have fewer items in my portfolio, but my core project showcases what I can do. For example, [Project Name] involved [Key Skill] to build [Result]." -->
