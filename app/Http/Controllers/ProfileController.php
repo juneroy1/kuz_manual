@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
@@ -66,5 +68,36 @@ class ProfileController extends Controller
                 'updated_at' => $user->updated_at,
             ]
         ]);
+    }
+
+    public function profileData(User $user): array {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'bio'=> $user->bio,
+            'profile_photo' => $user->profile_photo,
+            'profile_phto_url' => $this->fileUrl($user->profile_photo),
+            'cover_photo' => $user->cover_photo,
+            'cover_photo_url' => $this->fileUrl($user->cover_photo),
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+        ];
+    }
+
+
+    public function fileUrl(?string $path): ?string {
+        if (! $path){
+            return null;
+        }
+
+        return Storage::disk('public')->url($path);
+    }
+
+    private function deleteStoredFile(?string $path): void {
+        if ($path ) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }
