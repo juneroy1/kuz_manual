@@ -41,4 +41,33 @@ class FeedController extends Controller
             ]
         ]);
     }
+
+
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'content' => ['required', 'string', 'max:5000']
+        ]);
+
+        $post = $request->user()->posts()->create($validated);
+        $post->load('user');
+
+        return response()->json([
+            'message' => 'Post created successfully',
+            'post' => [
+                'id' => $post->id,
+                'content' => $post->content,
+                'created_at' => $post->created_at,
+                'updated_at' => $post->updated_at,
+                'author' => [
+                    'id' => $post->user->id,
+                    'name' => $post->user->name,
+                    'username' => $post->user->username,
+                    'profile_photo' => $post->user->profile_photo,
+                    'cover_photo' => $post->user->cover_photo,
+                ]
+            ]
+        ], 201);
+    }
 }
